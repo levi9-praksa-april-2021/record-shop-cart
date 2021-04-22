@@ -2,8 +2,9 @@ package com.recordshop.cart.domain.order;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -22,16 +23,18 @@ public class OrderService {
 	
 	private final OrderRepository orderRepository;
 	private final OrderRecordItemRepository orderRecordItemRepository;
+	RestTemplate restTemplate = new RestTemplate();
 	
 	private RecordDTO getRecord(Long recordId) {
-		
-		RestTemplate restTemplate = new RestTemplate();
 		RecordDTO record = restTemplate.getForObject("http://localhost:8080/records/" + recordId, RecordDTO.class);
-		
 		return record;
 	}
 	
-	public Order create(CreateOrderRequest request) {
+	private void updateStock(Long recordId, Integer stock) {
+		restTemplate.put("http://localhost:8080/records/updateStock/" + recordId + "/" + stock, null);
+	}
+
+	public Order create(CreateOrderRequest request) throws InvalidOrderStockException {
 		
 		List<OrderRecordItem> items = new ArrayList<OrderRecordItem>();
 		BigDecimal sumPriceOrder = new BigDecimal(0.0);
@@ -39,8 +42,8 @@ public class OrderService {
 		for (OrderRecordItemRequest itemDto : request.getItemsRequest()) {			
 			RecordDTO record = getRecord(itemDto.getRecordId());
 			
-			if(record.getStock() < itemDto.getCount()) {
-				continue;
+			if(record.getStock() < itemDto.getCount()) {				
+				throw new InvalidOrderStockException("Not enough in stock: " + record.getTitle());
 			}			
 			BigDecimal sumPriceItem = record.getPrice().multiply(new BigDecimal(itemDto.getCount()));
 			
@@ -54,17 +57,20 @@ public class OrderService {
 			orderRecordItemRepository.save(item);
 			items.add(item);	
 			
-			sumPriceOrder = sumPriceOrder.add(sumPriceItem);							
+			sumPriceOrder = sumPriceOrder.add(sumPriceItem);		
+			
+			Integer newStock = record.getStock() - item.getCount();
+			updateStock(record.getId(), newStock);
 		}
 		
-		System.out.println(sumPriceOrder.setScale(1));
      	Order order = Order.builder()
 				.id(null)
-				.priceSum(sumPriceOrder.setScale(1))
+				.priceSum(sumPriceOrder)
 				.items(items)
 				.build();
      	
     	return orderRepository.save(order);
+    	
 	}
 
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.recordshop.cart.domain.order.InvalidOrderStockException;
 import com.recordshop.cart.domain.order.Order;
 import com.recordshop.cart.domain.order.OrderService;
 
@@ -24,7 +25,7 @@ public class OrderController {
 	private final OrderMapper orderMapper;
 	
 	@PostMapping("")
-	public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody CreateOrderRequest request)  {
+	public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody CreateOrderRequest request) throws InvalidOrderStockException {
     	Order order = orderService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toDto(order));
 	}
