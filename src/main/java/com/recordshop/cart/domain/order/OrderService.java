@@ -23,15 +23,15 @@ public class OrderService {
 	
 	private final OrderRepository orderRepository;
 	private final OrderRecordItemRepository orderRecordItemRepository;
-	RestTemplate restTemplate = new RestTemplate();
+	private final RestTemplate restTemplate;
 	
 	private RecordDTO getRecord(Long recordId) {
-		RecordDTO record = restTemplate.getForObject("http://localhost:8080/records/" + recordId, RecordDTO.class);
+		RecordDTO record = restTemplate.getForObject("http://record-shop-catalog/records/" + recordId, RecordDTO.class);
 		return record;
 	}
 	
 	private void updateStock(Long recordId, Integer stock) {
-		restTemplate.put("http://localhost:8080/records/updateStock/" + recordId + "/" + stock, null);
+		restTemplate.put("http://record-shop-catalog/records/updateStock/" + recordId + "/" + stock, null);
 	}
 
 	public Order create(CreateOrderRequest request) throws InvalidOrderStockException {
