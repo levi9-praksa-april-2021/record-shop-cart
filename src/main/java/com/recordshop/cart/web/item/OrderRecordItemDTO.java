@@ -9,7 +9,7 @@ public class OrderRecordItemDTO {
 
 	private Long recordId;
 	private Integer count;
-	private BigDecimal recordPrice;
+	private BigDecimal price;
 	
 	
 }

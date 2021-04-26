@@ -4,13 +4,15 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class OrderRecordItemRequest {
 	
 	@NotBlank(message = "RecordId cannot be blank")
-	private final Long recordId;
+	private Long recordId;
 	@Positive(message = "Stock cannot be negative or zero")
-	private final Integer count;
+	private Integer count;
 
 }
