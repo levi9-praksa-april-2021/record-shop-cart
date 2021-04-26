@@ -9,11 +9,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import com.recordshop.cart.domain.item.OrderRecordItem;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,12 +19,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name="[order]")
 public class Order {
+
+	public Order(Long id, List<OrderRecordItem> items) {
+		this.id = id;
+		this.items = items;
+		this.priceSum = items.stream().map(OrderRecordItem::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

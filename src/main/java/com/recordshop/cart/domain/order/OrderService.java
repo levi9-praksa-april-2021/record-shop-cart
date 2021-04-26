@@ -4,13 +4,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.recordshop.cart.web.client.RecordsDTO;
+import com.recordshop.cart.web.item.OrderRecordItemDTO;
 import org.springframework.stereotype.Service;
 
-import com.recordshop.cart.domain.item.OrderRecordItem;
-import com.recordshop.cart.domain.item.OrderRecordItemRepository;
 import com.recordshop.cart.web.client.RecordClient;
 import com.recordshop.cart.web.item.OrderRecordItemRequest;
-import com.recordshop.cart.web.item.RecordDTO;
+import com.recordshop.cart.web.client.RecordDTO;
 import com.recordshop.cart.web.order.CreateOrderRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -23,42 +23,45 @@ public class OrderService {
 	private final RecordClient recordClient;
 
 	public Order create(CreateOrderRequest request) {
-		
-		List<OrderRecordItem> items = new ArrayList<OrderRecordItem>();
-		BigDecimal sumPriceOrder = new BigDecimal(0.0);
-		
-		for (OrderRecordItemRequest itemDto : request.getItemsRequest()) {			
-			RecordDTO record = recordClient.findRecordById(itemDto.getRecordId());
-			
-			if(record.getStock() < itemDto.getCount()) {				
+		String filter = buildFilter(request.getItemsRequest());
+		List<RecordDTO> records = recordClient.getRecords(filter).getRecords();
+
+		if (records.size() < request.getItemsRequest().size())
+			throw new RuntimeException();
+
+		List<OrderRecordItem> items = new ArrayList<>();
+		for (int i = 0; i < records.size(); i++) {
+			OrderRecordItemRequest orderItem = request.getItemsRequest().get(i);
+			RecordDTO record = records.get(i);
+			if(record.getStock() < orderItem.getCount()) {
 				throw new InvalidOrderStockException("Not enough in stock: " + record.getTitle());
-			}			
-			BigDecimal sumPriceItem = record.getPrice().multiply(new BigDecimal(itemDto.getCount()));
-			
+			}
+
 			OrderRecordItem item = OrderRecordItem.builder()
 					.id(null)
-					.recordId(itemDto.getRecordId())
-					.count(itemDto.getCount())
-					.price(sumPriceItem)
+					.recordId(orderItem.getRecordId())
+					.count(orderItem.getCount())
+					.price(record.getPrice().multiply(new BigDecimal(orderItem.getCount())))
 					.build();
-			
-			items.add(item);	
-			
-			sumPriceOrder = sumPriceOrder.add(sumPriceItem);		
-			
-			Integer newStock = record.getStock() - item.getCount();
-			recordClient.updateStock(record.getId(), newStock);
-			
+
+			items.add(item);
+
+			// update stock
+			recordClient.updateStock(record.getId(), record.getStock() - item.getCount());
 		}
-		
-     	Order order = Order.builder()
-				.id(null)
-				.priceSum(sumPriceOrder)
-				.items(items)
-				.build();
-     	
+
+		Order order = new Order(null, items);
     	return orderRepository.save(order);
     	
 	}
+
+	private String buildFilter(List<OrderRecordItemRequest> items) {
+		StringBuilder sb = new StringBuilder();
+		items.forEach(item -> sb.append(item.getRecordId()).append(','));
+		sb.deleteCharAt(sb.lastIndexOf(","));
+
+		return String.format("id=in=(%s)", sb.toString());
+	}
+
 
 }

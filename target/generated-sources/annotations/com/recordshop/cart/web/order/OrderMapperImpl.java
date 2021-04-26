@@ -1,7 +1,7 @@
 package com.recordshop.cart.web.order;
 
-import com.recordshop.cart.domain.item.OrderRecordItem;
 import com.recordshop.cart.domain.order.Order;
+import com.recordshop.cart.domain.order.OrderRecordItem;
 import com.recordshop.cart.web.item.OrderRecordItemDTO;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2021-04-26T11:04:02+0200",
-    comments = "version: 1.4.2.Final, compiler: Eclipse JDT (IDE) 3.22.0.v20200530-2032, environment: Java 11.0.4 (Oracle Corporation)"
+    date = "2021-04-26T13:44:18+0200",
+    comments = "version: 1.4.2.Final, compiler: javac, environment: Java 14 (Oracle Corporation)"
 )
 @Component
 public class OrderMapperImpl implements OrderMapper {
@@ -38,9 +38,9 @@ public class OrderMapperImpl implements OrderMapper {
 
         OrderRecordItemDTO orderRecordItemDTO = new OrderRecordItemDTO();
 
+        orderRecordItemDTO.setRecordId( orderRecordItem.getRecordId() );
         orderRecordItemDTO.setCount( orderRecordItem.getCount() );
         orderRecordItemDTO.setPrice( orderRecordItem.getPrice() );
-        orderRecordItemDTO.setRecordId( orderRecordItem.getRecordId() );
 
         return orderRecordItemDTO;
     }

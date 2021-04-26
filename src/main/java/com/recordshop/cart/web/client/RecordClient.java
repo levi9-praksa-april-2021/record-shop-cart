@@ -1,27 +1,16 @@
 package com.recordshop.cart.web.client;
 
-import java.util.Arrays;
-import java.util.List;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+@FeignClient("record-shop-catalog")
+public interface RecordClient {
+	@RequestMapping(method = RequestMethod.GET, value="/records")
+	RecordsDTO getRecords(@RequestParam String filter);
 
-import com.recordshop.cart.web.item.RecordDTO;
-
-import lombok.RequiredArgsConstructor;
-
-@Service
-@RequiredArgsConstructor
-public class RecordClient {
-
-	private final RestTemplate restTemplate;
-	
-	public RecordDTO findRecordById(Long id) {
-		RecordDTO record = restTemplate.getForObject("http://record-shop-cart/records/" + id, RecordDTO.class);
-		return record;
-	}
-	
-	public void updateStock(Long recordId, Integer stock) {
-		restTemplate.put("http://record-shop-catalog/records/updateStock/" + recordId + "/" + stock, null);
-	}
+	@RequestMapping(method = RequestMethod.PUT, value="/records/updateStock/{recordId}/{stock}")
+	void updateStock(@PathVariable Long recordId, @PathVariable int stock);
 }
