@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient("record-shop-catalog")
 public interface RecordClient {
 	@RequestMapping(method = RequestMethod.GET, value="/records")
-	RecordsDTO getRecords(@RequestParam String filter);
+	RecordsDTO getRecords(@RequestParam("filter") String filter);
 
 	@RequestMapping(method = RequestMethod.PUT, value="/records/updateStock/{recordId}/{stock}")
-	void updateStock(@PathVariable Long recordId, @PathVariable int stock);
+	void updateStock(@PathVariable(value = "recordId") Long recordId, @PathVariable(value = "stock") int stock);
 }

@@ -4,32 +4,62 @@ server:
 spring:
   application:
     name: record-shop-cart
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      ddl-auto: none
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+---
+spring:
   config:
+    activate:
+      on-profile: dev
     import: optional:configserver:http://localhost:8888/
   datasource:
     url: ${cart.datasource.url}
     username: ${cart.datasource.username}
     password: ${cart.datasource.password}
     initialization-mode: always
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
-    hibernate:
-      ddl-auto: none
+  cloud:
+    kubernetes:
+      discovery:
+        enabled: false
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://127.0.0.1:9000
-
 eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: record-shop-cart
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka/
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+---
+spring:
+  config:
+    activate:
+      on-profile: kubernetes
+  cloud:
+    kubernetes:
+      reload:
+        enabled: true
+        mode: polling
+        period: 1000
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://record-shop-auth:9000
+eureka:
+  client:
+    enabled: false
+    service-url:
+      registerWithEureka: false

@@ -1,4 +1,5 @@
 databaseChangeLog:
  - include: 
-      file: classpath*:db/changelog/changes/20210419144021-initial-schema.yaml 
-
+      file: classpath*:db/changelog/changes/20210419144021-initial-schema.yaml
+ - include:
+      file: classpath*:db/changelog/changes/20210423150000-order-item-fk.yaml
